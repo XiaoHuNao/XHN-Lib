@@ -1,6 +1,6 @@
 package com.xiaohunao.xhn_lib.common;
 
-import com.xiaohunao.xhn_lib.api.AbstractDynamicLoader;
+import com.xiaohunao.xhn_lib.api.data.loader.AbstractDynamicLoader;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.AddReloadListenerEvent;
 

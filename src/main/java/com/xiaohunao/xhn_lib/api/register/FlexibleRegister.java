@@ -1,6 +1,6 @@
-package com.xiaohunao.xhn_lib.common.register;
+package com.xiaohunao.xhn_lib.api.register;
 
-import com.xiaohunao.xhn_lib.api.AbstractDynamicLoader;
+import com.xiaohunao.xhn_lib.api.data.loader.AbstractDynamicLoader;
 import net.minecraft.core.Registry;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;

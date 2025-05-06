@@ -1,6 +1,7 @@
-package com.xiaohunao.xhn_lib.api;
+package com.xiaohunao.xhn_lib.api.data.loader;
 
 import com.google.gson.JsonElement;
+import com.xiaohunao.xhn_lib.common.serialization.DynamicSerializerType;
 import com.xiaohunao.xhn_lib.common.serialization.IDynamicSerializer;
 import net.minecraft.core.MappedRegistry;
 import net.minecraft.core.Registry;
@@ -14,9 +15,9 @@ import java.util.Map;
 import java.util.Set;
 
 public class SimpleDynamicLoader<T> extends AbstractDynamicLoader<T> {
-    private final IDynamicSerializer<T> serializer;
+    protected final DynamicSerializerType<T> serializer;
 
-    public SimpleDynamicLoader(String folderName, Registry<T> registry, IDynamicSerializer<T> serializer) {
+    public SimpleDynamicLoader(String folderName, Registry<T> registry, DynamicSerializerType<T> serializer) {
         super(folderName, registry);
         this.serializer = serializer;
     }
@@ -45,16 +46,20 @@ public class SimpleDynamicLoader<T> extends AbstractDynamicLoader<T> {
     public void loadNewValues(Map<ResourceLocation, JsonElement> resources, Registry<T> registry) {
         resources.forEach((resourceLocation, jsonElement) -> {
             try {
-                T value = serializer.read(resourceLocation, jsonElement);
+                T value = serializer.getSerializer().read(resourceLocation, jsonElement);
                 if (value != null) {
                     Registry.register(registry, resourceLocation, value);
                     loadedValues.put(resourceLocation, value);
+                    loadValue(resourceLocation,value);
                     LOGGER.debug("Successfully loaded {}: {}", registry.key().location(), resourceLocation);
                 }
             } catch (Exception e) {
                 LOGGER.error("Error loading {}: {}", registry.key().location(), resourceLocation, e);
             }
         });
+    }
+
+    public void loadValue(ResourceLocation location, T value) {
     }
 
     public void removeObsoleteValues(Set<ResourceLocation> previousValues, Set<ResourceLocation> currentResourceLocations, MappedRegistry<T> registry) {

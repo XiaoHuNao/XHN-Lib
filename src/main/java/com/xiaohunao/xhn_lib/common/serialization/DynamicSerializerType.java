@@ -11,12 +11,16 @@ import java.util.Objects;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
-public final class DynamicContentType<T> {
+public final class DynamicSerializerType<T> {
     private final IDynamicSerializer<T> serializer;
 
     
-    private DynamicContentType(Builder<T> builder) {
+    private DynamicSerializerType(Builder<T> builder) {
         this.serializer = builder.serializer;
+    }
+
+    public DynamicSerializerType<T> of(Codec<T> codec){
+        return builder(codec).build();
     }
 
     public IDynamicSerializer<T> getSerializer() {
@@ -27,15 +31,15 @@ public final class DynamicContentType<T> {
         return new Builder<>();
     }
 
+    public static <T> Builder<T> builder(Codec<T> codec) {
+        return new Builder<T>().codec(codec);
+    }
+
     public static class Builder<T> {
         private IDynamicSerializer<T> serializer;
 
 
         public Builder<T> serializer(IDynamicSerializer<T> serializer) {
-            Objects.requireNonNull(serializer);
-            if (this.serializer != null) {
-                throw new IllegalStateException("序列化器已设置");
-            }
             this.serializer = serializer;
             return this;
         }
@@ -88,11 +92,11 @@ public final class DynamicContentType<T> {
         }
         
 
-        public DynamicContentType<T> build() {
+        public DynamicSerializerType<T> build() {
             if (serializer == null) {
                 throw new IllegalStateException("必须设置序列化器");
             }
-            return new DynamicContentType<>(this);
+            return new DynamicSerializerType<>(this);
         }
     }
 }

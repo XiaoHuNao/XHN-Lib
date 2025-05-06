@@ -1,4 +1,4 @@
-package com.xiaohunao.xhn_lib.api;
+package com.xiaohunao.xhn_lib.api.data.loader;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
