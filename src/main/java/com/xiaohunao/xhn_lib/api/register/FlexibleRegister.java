@@ -48,8 +48,15 @@ public class FlexibleRegister<T> {
     private boolean seenNewRegistryEvent = false;
 
 
+    public static <T> FlexibleRegister<T> create(Registry<T> registry, String modId, @Nullable AbstractDynamicLoader<T> dynamicManager){
+        return new FlexibleRegister<>(registry,modId,dynamicManager);
+    }
 
-    public FlexibleRegister(Registry<T> registry, String modId, @Nullable AbstractDynamicLoader<T> dynamicManager ) {
+    public static <T> FlexibleRegister<T> create(Registry<T> registry, String modId){
+        return new FlexibleRegister<>(registry,modId,null);
+    }
+
+    private FlexibleRegister(Registry<T> registry, String modId, @Nullable AbstractDynamicLoader<T> dynamicManager ) {
         this.registryKey = Objects.requireNonNull(registry.key());
         this.modId = Objects.requireNonNull(modId);
         this.dynamicManager = dynamicManager;
@@ -57,7 +64,7 @@ public class FlexibleRegister<T> {
 
     }
 
-    public FlexibleRegister(Registry<T> registry, String modId) {
+    private FlexibleRegister(Registry<T> registry, String modId) {
         this(registry, modId, null);
     }
 

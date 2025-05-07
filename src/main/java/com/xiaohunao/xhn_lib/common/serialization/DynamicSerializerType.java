@@ -19,7 +19,7 @@ public final class DynamicSerializerType<T> {
         this.serializer = builder.serializer;
     }
 
-    public DynamicSerializerType<T> of(Codec<T> codec){
+    public static <T> DynamicSerializerType<T> of(Codec<T> codec){
         return builder(codec).build();
     }
 
