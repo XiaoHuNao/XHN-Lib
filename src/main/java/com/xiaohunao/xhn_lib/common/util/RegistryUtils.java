@@ -1,50 +1,37 @@
-package com.xiaohunao.xhn_lib.api.data.loader;
+package com.xiaohunao.xhn_lib.common.util;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.JsonElement;
-import com.xiaohunao.xhn_lib.common.DynamicLoaderHelper;
 import net.minecraft.core.Holder;
 import net.minecraft.core.MappedRegistry;
 import net.minecraft.core.Registry;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.server.packs.resources.ResourceManager;
-import net.minecraft.server.packs.resources.SimpleJsonResourceReloadListener;
-import net.minecraft.util.profiling.ProfilerFiller;
-import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.Field;
-import java.util.*;
+import java.util.List;
+import java.util.Map;
+import java.util.function.Consumer;
 
-public abstract class AbstractDynamicLoader<T> extends SimpleJsonResourceReloadListener {
-    protected static final Logger LOGGER = LoggerFactory.getLogger(AbstractDynamicLoader.class);
-    private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
+/**
+ * 提供注册表操作的工具类，包括动态注册和注销功能
+ */
+public class RegistryUtils {
+    private static final Logger LOGGER = LoggerFactory.getLogger(RegistryUtils.class);
 
-    protected final Map<ResourceLocation, T> loadedValues = new HashMap<>();
-    protected final Set<ResourceLocation> removedValues = new HashSet<>();
-
-    protected final String folderName;
-    protected final MappedRegistry<T> registry;
-
-    public AbstractDynamicLoader(String folderName, Registry<T> registry) {
-        super(GSON, folderName);
-        this.folderName = folderName;
-        this.registry = (MappedRegistry<T>) registry;
-
-        DynamicLoaderHelper.registerDynamicLoader(this);
-    }
-    
-    @Override
-    protected abstract void apply(@NotNull Map<ResourceLocation, JsonElement> resources, @NotNull ResourceManager resourceManager, @NotNull ProfilerFiller profiler);
-
-    protected boolean unregisterFromRegistry(MappedRegistry<T> registry, ResourceLocation id) {
+    /**
+     * 从注册表中注销一个条目
+     *
+     * @param registry 目标注册表
+     * @param id 要注销的资源ID
+     * @param <T> 注册表条目类型
+     * @return 是否成功注销
+     */
+    public static <T> boolean unregisterFromRegistry(MappedRegistry<T> registry, ResourceLocation id) {
         try {
             T value = registry.get(id);
             if (value == null) {
-                LOGGER.warn("Attempting to unregister non-existent {}: {}", registry.key().location(), id);
+                LOGGER.warn("Attempting to unregister non-existent entry {}: {}", registry.key().location(), id);
                 return false;
             }
 
@@ -60,14 +47,17 @@ public abstract class AbstractDynamicLoader<T> extends SimpleJsonResourceReloadL
 
             return success;
         } catch (Exception e) {
-            LOGGER.error("Error removing {} from registry: {}", registry.key().location(), id, e);
+            LOGGER.error("Error removing entry from registry {}: {}", registry.key().location(), id, e);
             return false;
         }
     }
 
-    protected boolean removeFromMap(MappedRegistry<T> registry, String fieldName, Object key) {
+    /**
+     * 从注册表的指定映射字段中移除一个键值对
+     */
+    private static <T> boolean removeFromMap(MappedRegistry<T> registry, String fieldName, Object key) {
         try {
-            Field field = getField(MappedRegistry.class, fieldName);
+            Field field = getAccessibleField(MappedRegistry.class, fieldName);
             @SuppressWarnings("unchecked")
             Map<Object, Object> map = (Map<Object, Object>) field.get(registry);
             Object removed = map.remove(key);
@@ -85,9 +75,12 @@ public abstract class AbstractDynamicLoader<T> extends SimpleJsonResourceReloadL
         }
     }
 
-    protected boolean removeFromList(MappedRegistry<T> registry, String fieldName, ResourceKey<T> resourceKey) {
+    /**
+     * 从注册表的指定列表字段中移除一个条目
+     */
+    private static <T> boolean removeFromList(MappedRegistry<T> registry, String fieldName, ResourceKey<T> resourceKey) {
         try {
-            Field field = getField(MappedRegistry.class, fieldName);
+            Field field = getAccessibleField(MappedRegistry.class, fieldName);
             Object listObj = field.get(registry);
 
             if (!(listObj instanceof List)) {
@@ -121,24 +114,46 @@ public abstract class AbstractDynamicLoader<T> extends SimpleJsonResourceReloadL
         }
     }
 
-    protected Field getField(Class<?> clazz, String fieldName) throws NoSuchFieldException {
+    /**
+     * 获取可访问的类字段
+     */
+    private static Field getAccessibleField(Class<?> clazz, String fieldName) throws NoSuchFieldException {
         Field field = clazz.getDeclaredField(fieldName);
         field.setAccessible(true);
         return field;
     }
-    
 
-    public boolean registerDynamicContent(ResourceLocation id) {
-        if (id == null) {
-            LOGGER.warn("Attempted to register null resource location for dynamic content");
+    /**
+     * 安全地解冻注册表，执行操作后再冻结
+     *
+     * @param registry 要操作的注册表
+     * @param action 要执行的操作
+     * @param <T> 注册表条目类型
+     * @return 操作是否成功
+     */
+    public static <T> boolean safeRegistryOperation(MappedRegistry<T> registry, Consumer<MappedRegistry<T>> action) {
+        registry.unfreeze();
+        try {
+            action.accept(registry);
+            return true;
+        } catch (Exception e) {
+            LOGGER.error("Error performing registry operation on {}", registry.key().location(), e);
             return false;
+        } finally {
+            registry.freeze();
         }
+    }
 
-        // Add to the tracked locations - actual content loading will happen during apply()
-        // Just marking this ID as a location we care about
-        if (!loadedValues.containsKey(id)) {
-            LOGGER.debug("Added dynamic content location to tracker: {}", id);
-        }
-        return true;
+    /**
+     * 向注册表注册一个条目
+     *
+     * @param registry 目标注册表
+     * @param id 资源ID
+     * @param value 要注册的值
+     * @param <T> 注册表条目类型
+     * @return 注册的值
+     */
+    public static <T> T register(Registry<T> registry, ResourceLocation id, T value) {
+        return Registry.register(registry, id, value);
     }
 }

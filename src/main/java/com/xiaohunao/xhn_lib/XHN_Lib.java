@@ -1,6 +1,6 @@
 package com.xiaohunao.xhn_lib;
 
-import com.xiaohunao.xhn_lib.common.DynamicLoaderHelper;
+import com.xiaohunao.xhn_lib.api.register.FlexibleRegisterManager;
 import net.minecraft.core.Registry;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
@@ -23,7 +23,7 @@ public class XHN_Lib {
     }
 
     private void onCommonSetup(final FMLCommonSetupEvent event) {
-        event.enqueueWork(DynamicLoaderHelper::registerAllDynamicLoaders);
+        event.enqueueWork(FlexibleRegisterManager.INSTANCE::registerAllDynamicLoaders);
     }
     
 
