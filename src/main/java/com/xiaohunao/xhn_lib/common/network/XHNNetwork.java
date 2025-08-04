@@ -1,6 +1,7 @@
 package com.xiaohunao.xhn_lib.common.network;
 
 import com.xiaohunao.xhn_lib.XHN_Lib;
+import com.xiaohunao.xhn_lib.common.network.bidir.TimeSyncPayload;
 import com.xiaohunao.xhn_lib.common.network.s2c.DynamicLoaderSyncPayload;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
@@ -17,6 +18,9 @@ public class XHNNetwork {
         final PayloadRegistrar registrar = event.registrar(VERSION);
 
         registrar.playToClient(DynamicLoaderSyncPayload.TYPE,DynamicLoaderSyncPayload.STREAM_CODEC, DynamicLoaderSyncPayload::clientHandle);
+
+        registrar.playBidirectional(TimeSyncPayload.TYPE, TimeSyncPayload.STREAM_CODEC, new DirectionalPayloadHandler<>(TimeSyncPayload::clientHandle,TimeSyncPayload::serverHandle));
+
 
     }
 }
