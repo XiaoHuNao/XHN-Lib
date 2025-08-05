@@ -90,9 +90,6 @@ public record DynamicLoaderSyncPayload(String modId,ResourceLocation registry,Re
                     return;
                 }
 
-                registry.unfreeze();
-                Registry.register(registry, payload.key(), value);
-
                 RegistryUtils.safeRegistryOperation(registry, mappedRegistry -> {
                     RegistryUtils.register(mappedRegistry, payload.key, value);
                     flexibleRegister.setEntriesChanged(true);
