@@ -2,6 +2,7 @@ package com.xiaohunao.xhn_lib.common.network.bidir;
 
 
 import com.xiaohunao.xhn_lib.XHN_Lib;
+import com.xiaohunao.xhn_lib.common.util.MinecraftTimeUtils;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.network.chat.Component;
@@ -39,7 +40,7 @@ public record TimeSyncPayload(long time) implements CustomPacketPayload {
     public static void serverHandle(final TimeSyncPayload payload, final IPayloadContext context) {
         context.enqueueWork(() -> {
             Player player = context.player();
-            ((ServerLevel)player.level()).setDayTime(payload.time);
+            MinecraftTimeUtils.safeSetTime((ServerLevel) player.level(), payload.time);
         }).exceptionally(e -> {
             context.disconnect(Component.translatable("neoforge.network.invalid_flow", e.getMessage()));
             return null;

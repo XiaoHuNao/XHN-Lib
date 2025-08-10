@@ -7,6 +7,8 @@ import com.xiaohunao.xhn_lib.common.util.data.MoonPhase;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.storage.DerivedLevelData;
+import net.minecraft.world.level.storage.ServerLevelData;
 import net.neoforged.neoforge.network.PacketDistributor;
 
 import java.util.Arrays;
@@ -473,10 +475,9 @@ public class MinecraftTimeUtils {
         long newTime = safeAddTicks(currentTicks, ticksToAdd);
 
         if (level instanceof ServerLevel serverLevel) {
-            // 服务端：直接设置时间并广播
+            safeSetTime(serverLevel, newTime);
             broadcastTimeToAllPlayers(serverLevel, newTime);
         } else if (level instanceof ClientLevel) {
-            // 客户端：发送网络包请求服务端修改
             TimeSyncPayload payload = new TimeSyncPayload(newTime);
             PacketDistributor.sendToServer(payload);
         }
@@ -491,10 +492,9 @@ public class MinecraftTimeUtils {
         long newTime = safeSubtractTicks(currentTicks, ticksToSubtract);
 
         if (level instanceof ServerLevel serverLevel) {
-            // 服务端：直接设置时间并广播
+            safeSetTime(serverLevel, newTime);
             broadcastTimeToAllPlayers(serverLevel, newTime);
         } else if (level instanceof ClientLevel) {
-            // 客户端：发送网络包请求服务端修改
             TimeSyncPayload payload = new TimeSyncPayload(newTime);
             PacketDistributor.sendToServer(payload);
         }
@@ -507,16 +507,28 @@ public class MinecraftTimeUtils {
      */
     public static void setTime(Level level, long time) {
         if (level instanceof ServerLevel serverLevel) {
-            // 服务端：直接设置时间并广播
-            serverLevel.setDayTime(time);
+            safeSetTime(serverLevel, time);
             broadcastTimeToAllPlayers(serverLevel, time);
         } else if (level instanceof ClientLevel clientLevel) {
-            // 客户端：发送网络包请求服务端修改
             clientLevel.setDayTime(time);
             TimeSyncPayload payload = new TimeSyncPayload(time);
             PacketDistributor.sendToServer(payload);
         }
     }
+
+    /**
+     *  检查serverLevelData安全的设置时间
+     */
+    public static void safeSetTime(ServerLevel serverLevel, long time) {
+        ServerLevelData serverLevelData = serverLevel.serverLevelData;
+        if (serverLevelData instanceof DerivedLevelData){
+            serverLevel.getServer().overworld().setDayTime(time);
+        } else {
+            serverLevelData.setDayTime(time);
+        }
+    }
+
+
 
 
 }
