@@ -1,4 +1,4 @@
-package com.xiaohunao.xhn_lib.api.register;
+package com.xiaohunao.xhn_lib.api.register.holder;
 
 import com.mojang.datafixers.util.Either;
 import net.minecraft.core.Holder;

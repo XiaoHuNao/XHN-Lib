@@ -23,7 +23,14 @@ public class XHN_Lib {
     }
 
     private void onCommonSetup(final FMLCommonSetupEvent event) {
-        event.enqueueWork(FlexibleRegisterManager.INSTANCE::registerAllDynamicLoaders);
+        event.enqueueWork(() -> {
+            // 注册所有动态加载器
+            FlexibleRegisterManager.INSTANCE.registerAllDynamicLoaders();
+            
+            // 处理所有已注册项，无论是否支持动态注册
+            // 这样确保静态注册项也能被 processAllRegisteredValues 处理
+            FlexibleRegisterManager.INSTANCE.processAllRegisteredValues();
+        });
     }
     
 

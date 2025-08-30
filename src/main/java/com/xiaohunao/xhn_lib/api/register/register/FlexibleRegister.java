@@ -1,14 +1,15 @@
-package com.xiaohunao.xhn_lib.api.register;
+package com.xiaohunao.xhn_lib.api.register.register;
 
 import com.google.gson.JsonElement;
 import com.xiaohunao.xhn_lib.api.data.loader.BaseDynamicLoader;
+import com.xiaohunao.xhn_lib.api.register.FlexibleRegisterManager;
+import com.xiaohunao.xhn_lib.api.register.holder.FlexibleHolder;
 import com.xiaohunao.xhn_lib.common.serialization.IDynamicSerializer;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.neoforged.bus.api.IEventBus;
-import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.neoforge.event.AddReloadListenerEvent;
 import net.neoforged.neoforge.registries.*;
 import org.jetbrains.annotations.Nullable;
@@ -41,9 +42,9 @@ public class FlexibleRegister<T> {
     // 模组ID
     private final String modId;
     // 注册表键
-    private final ResourceKey<? extends Registry<T>> registryKey;
+    protected final ResourceKey<? extends Registry<T>> registryKey;
     // 用于动态内容加载的管理器
-    private final BaseDynamicLoader<T> dynamicManager;
+    protected final BaseDynamicLoader<T> dynamicManager;
     // 是否支持动态注册
     private final boolean supportsDynamic;
     // 缓存所有条目
@@ -63,15 +64,27 @@ public class FlexibleRegister<T> {
 
 
     public static <T> FlexibleRegister<T> create(Registry<T> registry, String modId, @Nullable BaseDynamicLoader<T> dynamicManager){
-        return new FlexibleRegister<>(registry,modId,dynamicManager);
+        return create(registry.key(),modId,dynamicManager);
     }
 
     public static <T> FlexibleRegister<T> create(Registry<T> registry, String modId){
+        return create(registry.key(), modId, null);
+    }
+
+    public static <T> FlexibleRegister<T> create(ResourceKey<? extends Registry<T>> registry, String modId){
         return new FlexibleRegister<>(registry,modId,null);
     }
 
-    private FlexibleRegister(Registry<T> registry, String modId, @Nullable BaseDynamicLoader<T> dynamicManager ) {
-        this.registryKey = Objects.requireNonNull(registry.key());
+    public static <T> FlexibleRegister<T> create(ResourceKey<? extends Registry<T>> registry, String modId, @Nullable BaseDynamicLoader<T> dynamicManager){
+        return new FlexibleRegister<>(registry,modId,dynamicManager);
+    }
+
+    protected FlexibleRegister(Registry<T> registry, String modId, @Nullable BaseDynamicLoader<T> dynamicManager ) {
+        this(registry.key(), modId, dynamicManager);
+    }
+
+    protected FlexibleRegister(ResourceKey<? extends Registry<T>> registry, String modId, @Nullable BaseDynamicLoader<T> dynamicManager ) {
+        this.registryKey = Objects.requireNonNull(registry);
         this.modId = Objects.requireNonNull(modId);
         this.dynamicManager = dynamicManager;
         this.supportsDynamic = dynamicManager != null;
@@ -79,7 +92,11 @@ public class FlexibleRegister<T> {
         FlexibleRegisterManager.INSTANCE.addRegister(this);
     }
 
-    private FlexibleRegister(Registry<T> registry, String modId) {
+    protected FlexibleRegister(ResourceKey<? extends Registry<T>> registry, String modId) {
+        this(registry, modId, null);
+    }
+
+    protected FlexibleRegister(Registry<T> registry, String modId) {
         this(registry, modId, null);
     }
 
@@ -127,12 +144,16 @@ public class FlexibleRegister<T> {
      * 处理AddReloadListenerEvent事件，注册动态加载器
      */
     public void onAddReloadListener(AddReloadListenerEvent event) {
-        if (this.dynamicManager != null) {
+        if (this.dynamicManager != null && !event.getListeners().contains(this.dynamicManager)) {
             event.addListener(this.dynamicManager);
             LOGGER.debug("Added dynamic loader for registry: {}", this.registryKey);
         }
     }
 
+    public FlexibleRegister<T> makeSimpleRegistry() {
+        makeRegistry(this.registryKey.location(), RegistryBuilder::create);
+        return this;
+    }
 
     public Registry<T> makeRegistry() {
         return makeRegistry(this.registryKey.location(), RegistryBuilder::create);
@@ -158,11 +179,19 @@ public class FlexibleRegister<T> {
         return this.customRegistry;
     }
 
-    public Supplier<Registry<T>> getRegistry() {
+    public Supplier<Registry<T>> getSupplierRegistry() {
         if (this.registryHolder == null)
             this.registryHolder = new FlexibleRegisterHolder<>(this.registryKey);
 
         return this.registryHolder;
+    }
+
+    public Registry<T> getRegistry() {
+        Registry<T> registry = (Registry<T>) BuiltInRegistries.REGISTRY.get(registryKey.location());
+        if (registry == null) {
+            throw new IllegalArgumentException("No registry with key " + registryKey);
+        }
+        return registry;
     }
 
     /**

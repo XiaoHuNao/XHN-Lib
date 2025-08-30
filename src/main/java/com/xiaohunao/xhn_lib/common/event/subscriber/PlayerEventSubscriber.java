@@ -1,10 +1,8 @@
 package com.xiaohunao.xhn_lib.common.event.subscriber;
 
-import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
 import com.xiaohunao.xhn_lib.XHN_Lib;
-import com.xiaohunao.xhn_lib.api.register.FlexibleHolder;
-import com.xiaohunao.xhn_lib.api.register.FlexibleRegister;
+import com.xiaohunao.xhn_lib.api.register.holder.FlexibleHolder;
+import com.xiaohunao.xhn_lib.api.register.register.FlexibleRegister;
 import com.xiaohunao.xhn_lib.api.register.FlexibleRegisterManager;
 import com.xiaohunao.xhn_lib.common.network.s2c.DynamicLoaderSyncPayload;
 import com.xiaohunao.xhn_lib.common.serialization.IDynamicSerializer;
@@ -12,15 +10,12 @@ import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.entity.player.Player;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.event.entity.player.PlayerEvent;
 import net.neoforged.neoforge.network.PacketDistributor;
 
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
 import java.util.Map;
 
 @EventBusSubscriber(modid = XHN_Lib.MODID)

@@ -3,7 +3,7 @@ package com.xiaohunao.xhn_lib.common.network.s2c;
 
 import com.google.gson.JsonElement;
 import com.xiaohunao.xhn_lib.XHN_Lib;
-import com.xiaohunao.xhn_lib.api.register.FlexibleRegister;
+import com.xiaohunao.xhn_lib.api.register.register.FlexibleRegister;
 import com.xiaohunao.xhn_lib.api.register.FlexibleRegisterManager;
 import com.xiaohunao.xhn_lib.common.codec.XHNStreamCodecs;
 import com.xiaohunao.xhn_lib.common.util.RegistryUtils;
