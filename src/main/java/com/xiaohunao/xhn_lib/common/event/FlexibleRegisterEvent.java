@@ -1,13 +1,12 @@
 package com.xiaohunao.xhn_lib.common.event;
 
-import com.xiaohunao.xhn_lib.api.IGenericsEvent;
 import com.xiaohunao.xhn_lib.api.register.PostRegisterResult;
 import net.minecraft.core.MappedRegistry;
 import net.minecraft.resources.ResourceLocation;
 import net.neoforged.bus.api.Event;
 import net.neoforged.bus.api.ICancellableEvent;
 
-public abstract class FlexibleRegisterEvent<T> extends Event implements IGenericsEvent<T> {
+public abstract class FlexibleRegisterEvent<T> extends Event  {
     private final ResourceLocation location;
     private final T value;
     private final MappedRegistry<T> registry;
@@ -38,17 +37,6 @@ public abstract class FlexibleRegisterEvent<T> extends Event implements IGeneric
     public MappedRegistry<T> getRegistry() {
         return registry;
     }
-
-    /**
-     *  转换泛型类型
-     * @return 泛型类
-     */
-    @Override
-    public Class<T> getGenericsType() {
-        return (Class<T>) value.getClass();
-    }
-
-
 
     /**
      * 注册后事件，在资源注册完成后触发

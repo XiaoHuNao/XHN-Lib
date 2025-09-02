@@ -61,6 +61,19 @@ public class BaseDynamicLoader<T> extends SimpleJsonResourceReloadListener {
         this.serializer = serializer;
     }
 
+    /**
+     * 创建一个新的动态加载器
+     *
+     * @param registry 目标注册表
+     * @param serializer 用于反序列化的序列化器
+     */
+    public BaseDynamicLoader(Registry<T> registry, IDynamicSerializer<T> serializer) {
+        super(GSON, registry.key().location().getNamespace() + "/" + registry.key().location().getPath());
+        this.folderName = registry.key().location().getNamespace() + "/" + registry.key().location().getPath();
+        this.registry = (MappedRegistry<T>) registry;
+        this.serializer = serializer;
+    }
+
     @Override
     protected void apply(@NotNull Map<ResourceLocation, JsonElement> resources, @NotNull ResourceManager resourceManager, @NotNull ProfilerFiller profiler) {
         Set<ResourceLocation> previousValues = new HashSet<>(loadedValues.keySet());
@@ -241,4 +254,7 @@ public class BaseDynamicLoader<T> extends SimpleJsonResourceReloadListener {
         return serializer;
     }
 
+    public MappedRegistry<T> getRegistry() {
+        return registry;
+    }
 }

@@ -1,3 +1,3 @@
 {
-  "commands.time.set_game_time": "游戏时间已设置为 %s"
+  "xhn_lib.commands.time.set_game_time": "游戏时间已设置为 %s"
 }

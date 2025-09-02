@@ -133,7 +133,7 @@ public class FlexibleRegister<T> {
 
         for (Map.Entry<String, FlexibleHolder<T, ? extends T>> entry : staticEntries.entrySet()) {
             FlexibleHolder<T, ? extends T> holder = entry.getValue();
-            ResourceLocation entryId = holder.getKey().location();
+            ResourceLocation entryId = Objects.requireNonNull(holder.getKey()).location();
             
             event.register(this.registryKey, entryId, holder::get);
             LOGGER.debug("Registered static entry: {}", entryId);
